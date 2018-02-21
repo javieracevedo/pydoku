@@ -1,2 +1,2 @@
-# pychess
-Python chess
+# pydoku
+Python sudoku
