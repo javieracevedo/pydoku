@@ -74,7 +74,6 @@ class Board(object):
 
       # Add sprite to sprite groups and the draw it
       self.sprite_group.add(sprite)
-      #self.sprite_group.draw(self.DSURFACE)
 
     else:
       return False
@@ -161,18 +160,16 @@ class Board(object):
 
 
   def update(self, events):
+
     self.DSURFACE.fill(self.background_color)
     self.__draw_grid(self.lines_color, 1)
     self.event_handling(events)
-
-
-    ### Grid Update ###
 
     # Highlight the current selected cell, if any
     if self.current_cell_selected != None and self.highlight == True:
       self.highlight_cell(self.current_cell_selected)
 
-    # Update sprites on grid
+    # Update sprites belonging to sprite_group
     self.sprite_group.draw(self.DSURFACE)
 
 
