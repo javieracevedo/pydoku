@@ -1,6 +1,7 @@
 import pygame
 import libs.text_input as text_input
-import libs.board as board
+#import libs.board as board
+import sudoku_board as board
 from pydoku_sprites import *
 from number_sprite_gen import *
 
@@ -13,7 +14,7 @@ grid_lines_color = (0,0,0)
 
 
 # Sudoku board instance
-sudoku_board = board.Board(DSURFACE, sudoku_board_dimensions, background_color, grid_lines_color)
+sudoku_board = board.SudokuBoard(DSURFACE, sudoku_board_dimensions, background_color, grid_lines_color)
 
 # Sudoku specific board settings
 sudoku_board.scale_cell_sprite = False # Do not scale sprites on this board
@@ -29,11 +30,26 @@ def select_board_cell(mouse_pos):
   sudoku_board.select_cell(mouse_pos)
 
 
+def populate_board():
+  sudoku_board_file = open("boards/sudokuboards.txt")
+  sudoku_board_file = sudoku_board_file.readlines()
+  for i in range(len(sudoku_board_file)):
+    for j in range(len(sudoku_board_file[i]) - 1):
+      #print "{}, {}".format(i,j)
+      cell = (i,j)
+      #sudoku_board.board[i][j] = sudoku_board_file[i][j]
+      print "populate: {}".format(cell)
+      if sudoku_board_file[i][j] != "0":
+        number = NumberSpriteGen.factory(int(sudoku_board_file[i][j]))
+        sudoku_board.insert_sprite(number, cell, str(i))
+
+
+# Read a sudoku board from text and insert it on the sudoku board
+populate_board()
+
+
 # Grid events registrations
 sudoku_board.register_event(select_board_cell, "on_cell_lmb_down")
-
-
-
 
 running = True
 while running:
@@ -62,7 +78,5 @@ while running:
         sudoku_board.insert_sprite(number, sudoku_board.current_cell_selected, str(i))
 
     textinput.clear_text()
-
-
 
   pygame.display.update()
