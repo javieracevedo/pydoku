@@ -1,6 +1,6 @@
 import pygame
 import libs.text_input as text_input
-from board import *
+import libs.board as board
 from pydoku_sprites import *
 from number_sprite_gen import *
 
@@ -13,7 +13,7 @@ grid_lines_color = (0,0,0)
 
 
 # Sudoku board instance
-sudoku_board = Board(DSURFACE, sudoku_board_dimensions, background_color, grid_lines_color)
+sudoku_board = board.Board(DSURFACE, sudoku_board_dimensions, background_color, grid_lines_color)
 
 # Sudoku specific board settings
 sudoku_board.scale_cell_sprite = False # Do not scale sprites on this board
