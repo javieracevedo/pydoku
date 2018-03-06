@@ -1,6 +1,5 @@
-# Description TODO
-
 import numpy, pygame
+from cell import *
 
 
 class Board(object):
@@ -22,9 +21,9 @@ class Board(object):
 
     # Registered events list
     self.registered_events = [
-    	{"on_cell_lmb_down": []},
-    	{"on_cell_rmb_down": []},
-    	{"on_space_key_pressed": []}
+      {"on_cell_lmb_down": []},
+      {"on_cell_rmb_down": []},
+      {"on_space_key_pressed": []}
     ]
 
     # Grid properties
@@ -38,46 +37,55 @@ class Board(object):
     self.scale_cell_sprite = True
 
     # Current selected cell
-    # stored the following way {position: value}
     self.current_cell_selected = None
 
-    self.__init_board()
+    #self.init_board()
 
-  def __init_board(self):
+  def init(self):
     #print "Initializing a ({}, {}) board.".format(self.BOARD_W, self.BOARD_H)
-    self.board = [["0" for x in range(self.BOARD_W)] for y in range(self.BOARD_H)]
+    #self.board = [["0" for x in range(self.BOARD_W)] for y in range(self.BOARD_H)]
+    self.board = [[Cell((x,y, True),None) for y in range(self.BOARD_H)] for x in range(self.BOARD_W)]
 
   def restart(self):
     # Clean the 2d array representing the grid
-    self.board = [["0" for x in range(3)] for y in range(3)]
+    self.board = [[Cell((x,y, True), None) for y in range(self.BOARD_H)] for x in range(self.BOARD_W)]
 
     # Remove all sprites from sprite_group to remove them from the screen
     self.sprite_group.empty()
     self.DSURFACE.fill(self.background_color)
 
     self.__draw_grid(self.lines_color, 1)
-		
+    
 
-  def insert_sprite(self, sprite, cell, value_id):
-    cell_x, cell_y = cell
-    if self.board[cell_x][cell_y] is "0":
-      self.board[cell_x][cell_y] = value_id
+  def insert(self, sprite, cell_position, overwrite=False):
+    cell_x, cell_y = cell_position
+    cell = self.board[cell_x][cell_y]
+
+    if cell.overwrite or cell.isEmpty():
+      cell.overwrite = overwrite
+      self.sprite_group.remove(cell.sprite)
+      cell.empty()
+
+      cell.id = sprite.id
+      cell.sprite = sprite
+
+      # Instead of 0 I should be using the starting drawing position
       x = int(numpy.interp(cell_y, [0, self.BOARD_H], [0, self.WIDTH]))
       y = int(numpy.interp(cell_x, [0, self.BOARD_W], [0, self.HEIGHT]))
 
       # Set the position of the sprite to the interpolated values x,y (Top left corner of current cell)
-      sprite.rect = x, y
+      cell.sprite.rect = x, y
 
       # Scale the image to fit the board size
       if self.scale_cell_sprite:
-        sprite.image= pygame.transform.scale(sprite.image, (self.WIDTH/self.BOARD_H, self.HEIGHT/self.BOARD_H))
+        cell.sprite.image= pygame.transform.scale(cell.sprite.image, (self.WIDTH/self.BOARD_H, self.HEIGHT/self.BOARD_H))
 
       # Add sprite to sprite groups and the draw it
-      self.sprite_group.add(sprite)
-
+      self.sprite_group.add(cell.sprite)
+      return True
     else:
       return False
-    return True
+
 
   def __draw_grid(self, color, lines_width):
     ### Draws a 3x3 grid on the DSURFACE
@@ -147,7 +155,7 @@ class Board(object):
 
   def select_cell(self, cell_position):
     self.current_cell_selected = cell_position
-    print "Cell {}".format(self.current_cell_selected)
+    print "board:select_cell: Cell selected: {}".format(self.current_cell_selected)
 
   def highlight_cell(self, cell_position):
     cell_x, cell_y = cell_position
@@ -158,21 +166,33 @@ class Board(object):
     overlay.fill(self.highlight_color)
     self.DSURFACE.blit(overlay, (x,y))
 
+  # Check if a given value is in the board
+  def inBoard(self, value):
+    for cell_row in self.board:
+      for cell in cell_row:
+        if cell.id == value:
+          return True
+    return False
+
+  def filled(self):
+    for arr in self.board:
+      for cell in arr:
+        if cell.isEmpty(): 
+          return False
+    return True
+
 
   def update(self, events):
-
     self.DSURFACE.fill(self.background_color)
     self.__draw_grid(self.lines_color, 1)
     self.event_handling(events)
+
+
+    ### Grid Update ###
 
     # Highlight the current selected cell, if any
     if self.current_cell_selected != None and self.highlight == True:
       self.highlight_cell(self.current_cell_selected)
 
-    # Update sprites belonging to sprite_group
+    # Draws all the sprites on sprite_group to the surface
     self.sprite_group.draw(self.DSURFACE)
-
-
-    pygame.display.update()
-
-

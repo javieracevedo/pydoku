@@ -1,4 +1,5 @@
-from libs.board import *
+from libs.boardlib.board import *
+import utils
 import math
 
 
@@ -29,6 +30,37 @@ class SudokuBoard(Board):
       else:
         lines_width = lw
       pygame.draw.line(self.DSURFACE, color, [0, height], [self.WIDTH, height], lines_width)
+
+  def get_box(self, box_number):
+    box = []
+  
+    if box_number == 0:
+      cell_pos = (0,0)
+    elif box_number == 1:
+      cell_pos = (0,3)
+    elif box_number == 2:
+      cell_pos = (0,6)
+    elif box_number == 3:
+      cell_pos = (3,0)
+    elif box_number == 4:
+      cell_pos = (3,3)
+    elif box_number == 5:
+      cell_pos = (3,6)
+    elif box_number == 6:
+      cell_pos = (6,0)
+    elif box_number == 7:
+      cell_pos = (6,3)
+    elif box_number == 8:
+      cell_pos = (6,6) 
+
+
+    temp_row = []
+    for i in range(cell_pos[0], cell_pos[0] + 3):
+      for j in range(cell_pos[1], cell_pos[1] + 3):
+        temp_row.append(self.board[i][j].id)
+      box.append(temp_row)
+      temp_row = []
+    return box
 
   def update(self, events):
     self.DSURFACE.fill(self.background_color)

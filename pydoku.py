@@ -1,17 +1,14 @@
 import pygame
-import libs.text_input as text_input
+import libs.textinputlib.text_input as text_input
 import sudoku_board as board
-from pydoku_sprites import *
+#from pydoku_sprites import *
 from number_sprite_gen import *
-
+import utils
 
 BLACK = (0,0,0)
 WHITE = (255,255,255)
 GREEN = (0,255,0)
 RED = (255,0,0)
-
-
-
 
 pygame.font.init()
 winner_font = pygame.font.SysFont("monospace", 30)
@@ -29,6 +26,7 @@ grid_lines_color = (0,0,0)
 
 # Sudoku board instance
 sudoku_board = board.SudokuBoard(DSURFACE, sudoku_board_dimensions, background_color, grid_lines_color)
+sudoku_board.init()
 
 # Sudoku specific board settings
 sudoku_board.scale_cell_sprite = False # Do not scale sprites on this board
@@ -68,10 +66,10 @@ def populate_board():
 
   lines = []
   
-  sudoku_board_path = "boards/sudoku_board_2.txt"
+  sudoku_board_path = "boards/sudoku_board_4.txt"
   # Read sudokuboards file and store the lines in a list
   with open(sudoku_board_path) as f_in:
-    for line in nonblank_lines(f_in):
+    for line in utils.nonblank_lines(f_in):
       lines.append(line)
 
   # Iterate over lines list and insert the corresponding values in the board
@@ -80,96 +78,82 @@ def populate_board():
       cell = (x,y)
       if lines[x][y] != "0":
         number = NumberSpriteGen.factory(int(lines[x][y]))
-        sudoku_board.insert_sprite(number,cell, int(lines[x][y]))        
+        # Set the third argument to false, so the initial board values
+        # cannot be modified
+        sudoku_board.insert(number,cell, False)        
   
-# Utils
-def nonblank_lines(f):
-  for l in f:
-    line = l.rstrip()
-    if line:
-      yield line
-
-# check if a value is repeated more than on
-# on a list or a string
-def repeatedTwice(l, value, ignore):
-  # Counter to keep track of how much a value is repeated
-  times_repeated = 0
-  for item in l:
-    if item == value and item != ignore:
-      times_repeated += 1
-  
-  if times_repeated > 1:
-    return True
-  else:
-    return False
-
-
-def isBoardFull(board):
-  for arr in board:
-    if "0" in arr:
+def check_row(row):
+  for c in row:
+    if utils.appearsTwice(row, c, "0"):
+      print "Uh oh! : {} repeated more than twice in row {}".format(c, row)
       return False
   return True
 
 
-def sudoku_check(board):
-  # First: check if the board is full (All cells have values)
-  # Starting from the top, left to right
-  # Grab the first cell value, and check vertically and horizontally if there is any other cell with the same value
-  # If the stated above is true, return false(not win)
-  # If the stated above is false, return true
+def check_col(col):
+  for k in col:
+    if utils.appearsTwice(col, k, "0"):
+      print "Uh oh! : {} repeated more than twice in col {}".format(k, col)
+      return False  
+  return True
 
+def check_boxes(sudoku_board):
+  board = sudoku_board.board
+  arr_box = None
+  for i in range(len(board)):
+    arr_box = sudoku_board.get_box(i)
+    for arr in arr_box:
+      for v in arr:
+        appearence = utils.appearsTwice(arr_box, v)
+        if appearence:
+          return True
+  return False
 
-  # Iterate over board
-  # get row/column of current cell
-  # iterate over row/colum
-  # check if any of the row/colum cell's value is equal to current cell value
-
+def sudoku_check(sudoku_board):
   row, col = ("", "")
 
-
-
-  board_len = len(board)
+  board_len = len(sudoku_board.board)
+  filled = sudoku_board.filled()
   
-  
-  board_full = isBoardFull(board)
-
   # If board is full, check if there are any errors
-  if board_full:
+  if filled:
     # TODO: Im not particularly proud of this solution, I intend to fix this uglyness
     # on the next version of my Board library.
+
+    # Check rows and columns (convert this to a function)
     for i in range(board_len):
+
+      # Get row_columns string
       for j in range(board_len):
-        current_cell_value = board[i][j]
-        row += str(board[i][j])
-        col += str(board[j][i])
-      
-      for c in row:
-        if repeatedTwice(row, c, "0"):
-          print "Uh oh! : {} repeated more than twice in row {}".format(c, row)
-          return False
+        current_cell_value = sudoku_board.board[i][j].id
+        row += str(sudoku_board.board[i][j].id)
+        col += str(sudoku_board.board[j][i].id)
 
-      for k in col:
-        if repeatedTwice(col, k, "0"):
-          print "Uh oh! : {} repeated more than twice in col {}".format(k, col)
-          return False
-      
-      row = ""
-      col = ""
-    
+      if not check_row(row):
+        return False
 
+      if not check_col(col):
+        return False
+
+      # Empty the strings, for evey row and col
+      row, col = ("","")
     return True
+
+
   
 # Read a sudoku board from text and insert it on the sudoku board
 populate_board()
 
 
-#sudoku_check(sudoku_board.board)
-
-
-
-
 # Grid events registrations
 sudoku_board.register_event(select_board_cell, "on_cell_lmb_down")
+
+#sudoku_board.get_box(0)
+#check_win = sudoku_check(sudoku_board)
+print sudoku_board.get_box(5)
+if check_boxes(sudoku_board):
+  print "MMMG"
+
 
 running = True
 while running:
@@ -196,11 +180,12 @@ while running:
     for i in xrange(1,10):
       if current_input == str(i):
         number = NumberSpriteGen.factory(int(current_input))
-        sudoku_board.insert_sprite(number, sudoku_board.current_cell_selected, str(i))
+        sudoku_board.insert(number, sudoku_board.current_cell_selected, str(i))
 
     textinput.clear_text()
 
-  check_win = sudoku_check(sudoku_board.board)
+  #check_win = sudoku_check(sudoku_board)
+  check_win = False
   if check_win:
     draw_win()
 
