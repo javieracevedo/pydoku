@@ -1,5 +1,5 @@
 import numpy, pygame
-from cell import *
+from .cell import *
 
 
 class Board(object):
@@ -107,13 +107,13 @@ class Board(object):
   def register_event(self, function, event_type):
     event = {event_type: function}
     for e in self.registered_events:
-      for key, value in e.iteritems():
+      for key, value in e.items():
         if (key == event_type):
           value.append(function)
 
   def get_registered_events(self, event_name):
     for e in self.registered_events:
-      for key, value in e.iteritems():
+      for key, value in e.items():
         if (key == event_name):
           return value
 
@@ -155,7 +155,7 @@ class Board(object):
 
   def select_cell(self, cell_position):
     self.current_cell_selected = cell_position
-    print "board:select_cell: Cell selected: {}".format(self.current_cell_selected)
+    print("board:select_cell: Cell selected: {}".format(self.current_cell_selected))
 
   def highlight_cell(self, cell_position):
     cell_x, cell_y = cell_position
