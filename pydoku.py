@@ -152,9 +152,7 @@ sudoku_board.register_event(select_board_cell, "on_cell_lmb_down")
 
 # sudoku_board.get_box(0)
 # check_win = sudoku_check(sudoku_board)
-print(sudoku_board.get_box(5))
-if check_boxes(sudoku_board):
-    print("MMMG")
+
 
 running = True
 while running:
