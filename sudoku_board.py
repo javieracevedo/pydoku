@@ -14,7 +14,7 @@ class SudokuBoard(Board):
     cell_width = self.WIDTH/self.BOARD_W
     #x_dimension = self.board_dimension[0]
     #y_dimension = self.board_dimension[1]
-    for width in range(0, self.WIDTH, cell_width):
+    for width in range(0, self.WIDTH, int(cell_width)):
       if width % 3 == 0: # For now just asume that the board should be divided in three
         lines_width = lw * 5 # Make the third and sixth line thicker
 
@@ -24,7 +24,7 @@ class SudokuBoard(Board):
 
     # Draw horizontal lines
     cell_height = self.HEIGHT/self.BOARD_H
-    for height in range(0, self.HEIGHT, cell_height):
+    for height in range(0, self.HEIGHT, int(cell_height)):
       if height % 3 == 0: # For now just asume that the board should be divided in three
         lines_width = lw * 5
       else:
